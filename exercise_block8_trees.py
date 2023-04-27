@@ -97,7 +97,77 @@ df = pd.read_csv(pth, sep=' ', header=None, names=cols)
 
 # stump --------------------------------------------
 # -- student work --
-print(df)
+def stump(df):
+    def EntropyCalc(y):
+        _, counts = np.unique(y, return_counts=True)
+        p = counts /len(y)
+        #value = np.mean(y) # if the mean is 0 or 1
+    # making the entropy from randome data, because we dont need randomness or uncertiniaty, only 1 and 0
+    # for the entropy 0 is perfect
+        #if value == 0 or value == 1:
+         #   return 0
+        #else:
+         #   return -np.sum(value * np.log2(value))
+        return -np.sum(p*np.log2(p))
+
+#information gathering
+    def information(value,_left, _right):
+
+        hIndex = EntropyCalc(value) # target variable
+        hLeft = EntropyCalc(_left)
+        hRight = EntropyCalc(_right) # split
+        nth = len(value)
+        nthLeft = len(_left)
+        nthRight = len(_right)
+        return hIndex - (nthLeft / nth * hLeft + nthRight / nth * hRight)
+ #the output DF must have the following columns
+
+  #    --------------------------------------
+   #     - feature:object, the feature used when evaluating a split point candidate
+    #    - value:float64, the value the split was attempted on
+     #   - information_gain:float64, the information gain which would have resulted from this split
+      #  - h_left:float64, entropy of the left partition for the corresponding split point candidate
+       # - h_right:float64, entropy of the right partition for the corresponding split point candddate
+#Create dataframe
+    solution = pd.DataFrame(columns=["feature", "value","information_gain", "h_left","h_right"])
+
+
+    for feature in df.columns[:-1]:
+    #uniquel values
+    #sorts the unique values
+        unique_values = np.sort(df[feature].unique())
+
+    #loop over all split points
+        for k in range(len(unique_values)-1):
+            _splits = (unique_values[k] + unique_values[k+1])/2
+        #chose or put in partition -> left or right
+            leftPart = df[df[feature] <= _splits]["class"].values
+            rightPart = df[df[feature] > _splits]["class"].values
+        # check if its empty
+            if len(rightPart) == 0 or len(leftPart) ==0:
+                continue
+
+            #inforamtion calculation
+            iCalc= information(df["class"].values, leftPart, rightPart)
+
+            # entropy of part.
+
+            E_left = EntropyCalc(leftPart)
+            E_right = EntropyCalc(rightPart)
+
+            solution = solution.append({"feature": feature,
+                                    "value": _splits,
+                                    "information_gain": np.round(iCalc, 6),
+                                    "h_left": np.round(E_left, 6),
+                                    "h_right": np.round(E_right, 6)}, ignore_index=True)
+
+    return solution
+
+
+
+_function = stump(df)
+
+print(_function)
 #solution = ""
 
 
